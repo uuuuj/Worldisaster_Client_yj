@@ -1,214 +1,66 @@
+// pages/video.js
+
 import Head from 'next/head';
-import React, { useEffect, useState } from 'react';
-import VideoPlayer from '../components/video-player';
-import Modal from 'react-modal';
-import Link from 'next/link';
-import * as Maxtap from 'maxtap_plugin';
-export default function Home() {
-  const [isModal, setIsOpen] = useState(false);
-  const [isWatchNow, setIsWatchNow] = useState(false);
-  const [videoUrl, setVideoUrl] = useState('');
+import { useEffect } from 'react';
+
+const VideoPage = ({ videoUrl }) => {
   useEffect(() => {
-    console.log('comming');
-    new Maxtap.Component({ content_id: 'spiderman-4' }).init();
-  });
-
-  let newvideoUrl =
-    'https://4ykn7mxvnwqg-hls-push.5centscdn.com/raw/Vinveli%20Payana%20Kuripugal/VPK_Moviewud_HD_combined.smil/playlist.m3u8';
-
-  function openModal() {
-    setIsOpen(true);
-  }
-
-  function afterOpenModal() {
-    // subtitle.style.color = '#f00';
-  }
-
-  function closeModal() {
-    setIsOpen(false);
-  }
-
-  const playVideo = (type) => {
-    if (type === 'trailer') {
-      setIsWatchNow(true);
-      setVideoUrl(newvideoUrl);
-    } else if (type === 'teaser') {
-      setIsWatchNow(true);
-      setVideoUrl(newvideoUrl);
-    } else {
-      setIsWatchNow(false);
+    if (Hls.isSupported()) {
+      var hls = new Hls();
+      hls.loadSource(videoUrl);
+      hls.attachMedia(document.getElementById('example-video'));
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+        document.getElementById('example-video').play();
+      });
+    } else if (videojs('example-video').tech().canPlayType('application/vnd.apple.mpegurl')) {
+      videojs('example-video').src(videoUrl);
+      videojs('example-video').play();
     }
-  };
-
-  const closeVideoModal = () => {
-    setIsWatchNow(false);
-  };
+  }, [videoUrl]);
 
   return (
-    <div className="container">
+    <>
       <Head>
-        <title>Next.js & HLS.js</title>
-        <link rel="icon" href="/favicon.ico" />
+        <title>Video Test</title>
+        <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet" />
+        <script src="https://unpkg.com/video.js/dist/video.js"></script>
+        <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/hls.js@canary"></script>
       </Head>
-
-      <main>
-        <div className="grid">
-          <Link href="/">
-            <a
-              className="btn btn-watchnow btn-booknow watchnow mr-3"
-              onClick={(e) => {
-                e.preventDefault();
-                playVideo('trailer');
-              }}
-            >
-              Watch Now
-            </a>
-          </Link>
-        </div>
-
-        <Modal
-          isOpen={isWatchNow}
-          onAfterOpen={afterOpenModal}
-          onRequestClose={closeVideoModal}
-          contentLabel="Video Modal"
-        >
-          {videoUrl !== '' && <VideoPlayer src={videoUrl} />}
-          <div className="text-center mt-4">
-            <button
-              onClick={() => closeVideoModal()}
-              className="btn btn-danger"
-            >
-              Close
-            </button>
-          </div>
-        </Modal>
-      </main>
-
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer .separator {
-          width: 20px;
-          height: 20px;
-          text-align: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
-
-        .title {
-          margin: 0;
-          line-height: 1.15;
-          font-size: 4rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .video-wrapper {
-          max-width: 800px;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
-    </div>
+      <body>
+        <video id="example-video" width="960" height="540" className="video-js vjs-default-skin" controls>
+          <source src={videoUrl} type="application/x-mpegURL" />
+        </video>
+      </body>
+    </>
   );
-}
+};
+
+export default VideoPage;
+
+// getServerSideProps 또는 getStaticProps를 사용하여 videoUrl을 불러올 수 있습니다.
+export async function getServerSideProps(context) {
+    // 여기에 비디오 URL을 불러오는 로직을 작성하세요.
+    // 예를 들면, 백엔드 API로부터 비디오 URL을 가져옵니다.
+    const videoUrl = await fetchVideoUrl(context.params.id);
+  
+    return {
+      props: {
+        videoUrl, // 서버로부터 받은 비디오 URL을 props로 전달합니다.
+      },
+    };
+  }
+  
+  // 이 함수는 백엔드 API로부터 비디오 URL을 가져오는 예시입니다.
+  // 이 함수는 백엔드 API로부터 비디오 URL을 가져오는 예시입니다.
+async function fetchVideoUrl(id) {
+    const response = await fetch(`http://3.37.123.46/upload/${id}`);
+    if (!response.ok) {
+      // 응답이 성공적이지 않은 경우, 에러 핸들링을 해야 합니다.
+      // 예를 들어, 에러 페이지를 렌더링하거나 기본 URL을 설정할 수 있습니다.
+      throw new Error('Failed to fetch video URL');
+    }
+    const data = await response.json();
+    return data.url;
+  }
+  
